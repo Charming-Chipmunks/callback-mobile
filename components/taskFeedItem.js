@@ -8,6 +8,13 @@ import {
 } from 'react-native';
 import moment from 'moment'
 
+// state management
+import {observer} from 'mobx-react/native'
+import Store from '../data/store'
+
+import config from '../constants/Routes'
+
+
 // icons
 var icons = {
   hamburger: 'https://cdn3.iconfinder.com/data/icons/simple-toolbar/512/menu_start_taskbar_and_window_panel_list-128.png',
@@ -28,6 +35,7 @@ var icons = {
 }
 
 // each item in the task feed
+@observer
 class TaskFeedItem extends Component {
   constructor(props){
     super(props);
@@ -43,7 +51,7 @@ class TaskFeedItem extends Component {
       action_type: this.props.task.actionSource,
       action: this.props.task.type,
       // can be task.description
-      action_details: this.props.task.type,
+      action_details: this.props.task.description,
       companyName: this.props.task.company,
       // task item style
       borderColor: '#16C172',
@@ -60,35 +68,36 @@ class TaskFeedItem extends Component {
     var nextTask = "Next Task: (example) \ndue " + moment(date).format('MMMM Do YYYY')
     var that = this;
 
-    fetch('http://jobz.mooo.com:5000/actions/1/' + this.state.id, {
-      method: 'put'
+    fetch(config.host + '/actions/1/' + this.state.id, {
+      method: 'PUT'
     }).then(function(response) {
         Alert.alert(completedText + nextTask);
 
         that.setState({
           completed_time: date
         })
+
+        Store.updateActionCount('-');
+        Store.updateHistoryCount();
+        Store.push(that.props.task, 'actionHistory')
       })
       .catch((error) => {
         console.error(error);
       });
-
-    // also need to update db
   }
 
   setItemStyle(time, completed) {
     // yellow border if due today
-    if (time === 0) {
-      this.setState({
-        borderColor: '#F8CF46'
-      })
-    } else if (completed !== null) {
-      // if completed and overdue, gray border
+
+    if (completed !== null) {      
       this.setState ({
         borderColor: '#a5a2a4',
         backgroundColor: '#ffffff'
       })
-      // if (completed !== null) {
+    } else if (time === 0) {
+      this.setState({
+        borderColor: '#F8CF46'
+      })
     } else {
       // if not completed and overdue, highlight red
       this.setState ({
@@ -107,14 +116,20 @@ class TaskFeedItem extends Component {
     var displayDate;
 
     // use diff to determine the display date in the task item
-    if (diff < 0) {
-      displayDate = this.state.completed_time !== null? diff * -1 + ' days ago': 'over due';
-    } else if (diff === 0) {
-      displayDate = 'today'
-    } else if (diff === 1) {
-      displayDate = diff + ' day'
+    if (this.state.completed_time !== null) {
+      var completedDate = moment(this.state.completed_time)
+      diff = completedDate.diff(now, 'days');
+      displayDate = diff === 0? 'today' : diff * -1 + ' days ago'; 
     } else {
-      displayDate = diff + '\ndays'
+      if (diff < 0) {
+        displayDate = 'over due';
+      } else if (diff === 0) {
+        displayDate = 'today';
+      } else if (diff === 1) {
+        displayDate = diff + ' day';
+      } else {
+        displayDate = diff + '\ndays';
+      }
     }
 
     // add props for time relative to today and display date
@@ -129,44 +144,51 @@ class TaskFeedItem extends Component {
 
   render() {
     var style = {
-      barStyle: { flexDirection: 'row', alignItems: 'center', borderWidth: 2, marginTop: 2,
+      barStyle: { flex:1 , flexDirection: 'row', alignItems: 'center', borderWidth: 2,
       paddingLeft: 2,
       backgroundColor: this.state.backgroundColor, borderColor: this.state.borderColor,
       },
-      clickerStyle: {
-        flex:1
-      }
+      wrapperStyle: {
+        backgroundColor: this.state.backgroundColor, borderColor: this.state.borderColor,
+        flex: 1, flexDirection: 'row', marginTop: 2
+      },
+      checkboxStyle: {width: 60, flexDirection: 'row', alignSelf: 'flex-end',
+      justifyContent: 'center', alignItems: 'center'}
     }
 
     if ((this.props.category === 'Tasks' && this.state.completed_time === null) 
         || (this.props.category === 'History' && this.state.completed_time !== null)) {
       return (
-      <View style={style.barStyle}>
-        <View style={{width: 40}}><Text style={{textAlign: 'center'}}>{this.state.display_date}</Text></View>
-        <View style={{width: 50}}><Image 
-          style={{height: 35, width: 35, margin: 5}}
-          source={{uri: this.state.icon}} 
-        /></View>
-        <View style={{flexDirection: 'column', paddingRight: 50}}>
-          <Text style={{width: 230}}>{this.state.action_details}</Text>
-          <Text display={this.state.companyName}>{this.state.companyName}</Text>
+      <View style={style.wrapperStyle}>
+        <View style={style.barStyle}>
+          <View style={{width: 40}}><Text style={{textAlign: 'center'}}>{this.state.display_date}</Text></View>
+          <View style={{width: 50}}><Image 
+            style={{height: 35, width: 35, margin: 5}}
+            source={{uri: this.state.icon}} 
+          /></View>
+          <View style={{flex: 1, flexDirection: 'column'}}>
+            <Text>{this.state.action_details}</Text>
+            <Text display={this.state.companyName}>{this.state.companyName}</Text>
+          </View>
         </View>
+        <View style={{justifyContent: 'center'}}>
         { this.props.category === 'Tasks' &&
-          <View style={{width: 35, flexDirection: 'column', marginLeft: -90}}>
+          <View style={style.checkboxStyle}>
             <TouchableOpacity onPress={this.completeTask}>  
               <Image 
-                style={{height: 20, width: 20, opacity: 0.5}}
+                style={{height: 30, width: 30, opacity: 0.5}}
                 source={{uri: icons.done}} 
               />
             </TouchableOpacity>
             <TouchableOpacity>
               <Image 
-                style={{height: 20, width: 20, opacity: 0.8}}
+                style={{height: 30, width: 30, opacity: 0.8}}
                 source={{uri: icons.x}} 
               />
             </TouchableOpacity>
           </View>
         }
+        </View>
       </View>
       )
     } else {

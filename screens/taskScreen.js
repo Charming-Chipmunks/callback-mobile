@@ -14,6 +14,7 @@ import {
   Image, 
   Button,
 } from 'react-native';
+import config from '../constants/Routes'
 import moment from 'moment'
 import {observer} from 'mobx-react/native'
 import Store from '../data/store'
@@ -21,6 +22,9 @@ import {NavBar} from '../components/navBar'
 import TaskStatusItem from '../components/taskStatusItem'
 import TaskStatus from '../components/taskStatus'
 import TaskFeed from '../components/taskFeed'
+
+// config
+
 // import data from '../data/fakeData'
 
 // import {Nav} from 'react-bootstrap'
@@ -28,7 +32,7 @@ import TaskFeed from '../components/taskFeed'
 // variables
 var testTaskTypes = [ 
   { type: 'Open Tasks', count: 8 }, 
-  { type: 'Recently Completed Tasks', count: 23 }, 
+  { type: 'Recently Completed', count: 23 }, 
   { type: 'Companies to Review', count: 5 } 
 ]
 
@@ -49,7 +53,7 @@ var icons = {
 export default class TaskScreen extends Component {
   static route = {
     navigationBar: {
-      title: 'home'
+      title: 'callback.io'
     },
     rightButtons: [
       {
@@ -90,15 +94,71 @@ export default class TaskScreen extends Component {
     ]
   }
 
+  constructor(){
+    super();
+
+    this.state = {
+      jobCount: 0,
+      actionCount: 0
+    }
+  }
+
   componentWillMount() {
-    fetch('http://jobz.mooo.com:5000/actions/1')
-      .then((response) => response.json())
+    var that = this;
+    // get actions
+    fetch(config.host+ '/actions/1')
+      .then((response) => {
+        return response.json()
+      })
       .then((responseJson) => {
         Store.updateActions(responseJson);
+        Store.sortActions(responseJson);
       })
       .catch((error) => {
         console.error(error);
       });
+
+      // set new jobs
+    fetch(config.host + '/jobs/1/new')
+      .then((response) => {
+        // console.log('jobs found: ', response)
+        console.log('config', config.host)
+        return response.json();
+      })
+      .then((responseJson) => {
+        Store.updateJobCount(responseJson.length);
+        Store.updateJobs(responseJson);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    // set favored jobs {
+    fetch(config.host + '/jobs/1/favored')
+      .then((response) => {
+        // console.log('jobs found: ', response)
+        return response.json()
+      })
+      .then((responseJson) => {
+        Store.updateFavoredJobs(responseJson);
+      })
+      .catch((error) => {
+        console.error(error);
+      })
+
+    // get params for user {
+    fetch(config.host + '/parameter/1')
+      .then((response) => {
+        // console.log('jobs found: ', response)
+        return response.json()
+      })
+      .then((responseJson) => {
+        // update
+        Store.updateUserParams(responseJson[0].Parameters)
+      })
+      .catch((error) => {
+        console.error(error);
+      })
   }
 
   _navigate(next) {
@@ -111,8 +171,8 @@ export default class TaskScreen extends Component {
   render() {
     const {actions} = Store;
     return(
-      <View style={{flex: 1, flexDirection: 'column', marginTop:10}}>
-        <TaskStatus user='Joosang' taskTypes={testTaskTypes} navigator={this.props.navigator}/>
+      <View style={{flex: 1, flexDirection: 'column', marginTop: 5}}>
+        <TaskStatus user='Joosang' taskTypes={testTaskTypes} jobCount={this.state.jobCount} actionCount={this.state.actionCount} navigator={this.props.navigator}/>
         <View style={{flex: 1}}>
           <TaskFeed category='Tasks' tasks={actions}/>
           <TaskFeed category='History' tasks={actions}/>

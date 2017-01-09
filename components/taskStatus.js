@@ -4,7 +4,7 @@ import {
   View,
   Image
 } from 'react-native';
-import TaskStatusItem from './taskStatusItem'
+import TaskStatusItem from './taskStatusItem';
 
 // Task status bar - number of tasks pending, completed, etc
 class TaskStatus extends Component {
@@ -19,7 +19,7 @@ class TaskStatus extends Component {
 
   render() {
     return (
-      <View style={{height: 140, flexDirection: 'column', padding: 5}}> 
+      <View style={{height: 120, flexDirection: 'column', padding: 5}}> 
         <View style={{flex: 1}}>
           <Text>Hi <Text style={{fontWeight: 'bold'}}>{this.props.user}</Text>, I'm your personal recruiter!</Text>
         </View>

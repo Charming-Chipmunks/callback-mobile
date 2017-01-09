@@ -31,13 +31,15 @@ class JobListNav extends Component {
           <TouchableOpacity onPress={(event) => this.onTabClick(event, 'Active')} style={styles.tabStyle} >
             <Text style={{textAlign: 'center'}}>Active</Text>
           </TouchableOpacity>
-          <TouchableOpacity id='allTab' onPress={(event) => this.onTabClick(event, 'All')} style={styles.tabStyle} >
-            <Text style={{textAlign: 'center'}}>All</Text>
-          </TouchableOpacity>
         </View>
       </View>
     )
   }
 }
+
+//All Tab
+//<TouchableOpacity id='allTab' onPress={(event) => this.onTabClick(event, 'All')} style={styles.tabStyle} >
+//  <Text style={{textAlign: 'center'}}>All</Text>
+//</TouchableOpacity>
 
 module.exports = JobListNav;

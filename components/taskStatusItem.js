@@ -5,6 +5,7 @@ import {
   Image,
   TouchableOpacity
 } from 'react-native';
+import mobx from 'mobx';
 import {observer} from 'mobx-react/native'
 import Store from '../data/store'
 
@@ -15,20 +16,19 @@ class TaskStatusItem extends Component {
     super(props);
 
     this.state = {
-      taskCount: this.props.task.count,
+      taskCount: 0,
       taskType: this.props.task.type,
       backgroundColor: '#a5a2a4'
     }
   }
 
   componentWillMount() {
+    const {jobs, favoredJobs} = Store;
     if (this.state.taskType === 'Companies to Review') {
       this.setState({
-        backgroundColor: '#D85353'
+        backgroundColor: '#D85353',
       })
     }
-
-    console.log('task status item', this.props.navigator);
   }
 
   // clicking a bubble will direct user to correct Jobs tab
@@ -42,6 +42,7 @@ class TaskStatusItem extends Component {
   }
 
   render(){
+    const {jobCount, actionCount, actionHistoryCount} = Store;
     var style = {
       taskView: {
         flex: 1, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', margin: 5
@@ -51,16 +52,41 @@ class TaskStatusItem extends Component {
         transform: [ { scaleX: 1.5 } ] // transform to oval
       }
     }
-    return (
-      <View style={style.taskView}>
-        <TouchableOpacity style={style.taskCount} onPress={this._navigate.bind(this)}>
-          <Text style={{textAlign: 'center', width: 25, fontSize: 20, color: '#ffffff'}}>{this.state.taskCount}</Text>
-        </TouchableOpacity>
-        <View>
-          <Text style={{textAlign: 'center', fontSize: 11, margin: 10}}>{this.state.taskType}</Text>
+
+    if (this.state.taskType === 'Companies to Review') {
+      return (
+        <View style={style.taskView}>
+          <TouchableOpacity style={style.taskCount} onPress={this._navigate.bind(this)}>
+            <Text style={{textAlign: 'center', width: 30, fontSize: 15, color: '#ffffff'}}>{jobCount}</Text>
+          </TouchableOpacity>
+          <View>
+            <Text style={{textAlign: 'center', fontSize: 11, margin: 10}}>{this.state.taskType}</Text>
+          </View>
+        </View>  
+      )
+    } else if (this.state.taskType === 'Open Tasks') {
+      return (
+        <View style={style.taskView}>
+          <TouchableOpacity style={style.taskCount} onPress={this._navigate.bind(this)}>
+            <Text style={{textAlign: 'center', width: 30, fontSize: 15, color: '#ffffff'}}>{actionCount}</Text>
+          </TouchableOpacity>
+          <View>
+            <Text style={{textAlign: 'center', fontSize: 11, margin: 10}}>{this.state.taskType}</Text>
+          </View>
         </View>
-      </View>
-    )
+      )
+    } else {
+      return (
+        <View style={style.taskView}>
+          <TouchableOpacity style={style.taskCount} onPress={this._navigate.bind(this)}>
+            <Text style={{textAlign: 'center', width: 30, fontSize: 15, color: '#ffffff'}}>{actionHistoryCount}</Text>
+          </TouchableOpacity>
+          <View>
+            <Text style={{textAlign: 'center', fontSize: 11, margin: 10}}>{this.state.taskType}</Text>
+          </View>
+        </View>
+      )
+    }
   }
 }
 
