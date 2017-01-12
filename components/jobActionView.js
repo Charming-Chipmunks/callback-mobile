@@ -46,8 +46,8 @@ export default class JobActionView extends Component {
       }
     }
 
-    const {actions, actionHistory} = Store;
-    var activeActions = mobx.toJS(actions)
+    const {actions, activeActions, actionHistory} = Store;
+    var activeActionsJS = mobx.toJS(Store.activeActions.slice())
     var id = this.props.route.params.job.id;
     console.log('passed job: ', this.props.route.params.job)
     return(
@@ -62,8 +62,8 @@ export default class JobActionView extends Component {
         </View>
           <ScrollView>
           {
-            actions.map( (e, i) => (
-              e.JobId === id && <TaskFeedItem category='Tasks' task={e} key={i}/>
+            activeActions.map( (e, i) => (
+              <TaskFeedItem jobId={id} category='Tasks' task={e} key={i}/>
             ))
           }
         </ScrollView>

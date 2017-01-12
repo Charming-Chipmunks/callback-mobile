@@ -14,7 +14,7 @@ import moment from 'moment';
 
 // feed for pending tasks and history
 @observer
-export default class TaskFeed extends Component {
+export default class HistoryFeed extends Component {
   constructor(props) {
     super(props);
 
@@ -30,16 +30,16 @@ export default class TaskFeed extends Component {
   //   })
   // }
 
-  compareDates(a, b){
-    // sort completed tasks by descending
-    var now = moment();
-    var timeA = moment(a);
-    var timeB = moment(b);
-    var diffA = timeA.diff(now, 'days');
-    var diffB = timeB.diff(now, 'days')
+  // compareDates(a, b){
+  //   // sort completed tasks by descending
+  //   var now = moment();
+  //   var timeA = moment(a);
+  //   var timeB = moment(b);
+  //   var diffA = timeA.diff(now, 'days');
+  //   var diffB = timeB.diff(now, 'days')
 
-    return diffA - diffB < 0? 1: 0;
-  }
+  //   return diffA - diffB < 0? 1: 0;
+  // }
 
   render() {
     var style = {
@@ -48,7 +48,7 @@ export default class TaskFeed extends Component {
       }
     }
     const {actions, activeActions, actionHistory} = Store;
-    var actionsArray = this.props.category === 'Tasks'? mobx.toJS(actions): mobx.toJS(actionHistory).sort((a, b) => this.compareDates(a.completedTime, b.completedTime));
+    // var actionsArray = this.props.category === 'Tasks'? mobx.toJS(actions): mobx.toJS(actionHistory).sort((a, b) => this.compareDates(a.completedTime, b.completedTime));
     // this.props.category === 'History'? console.log('history constant actions', actionsArray): true;
     var that = this;
 
@@ -58,12 +58,12 @@ export default class TaskFeed extends Component {
           <Text style={{fontWeight: 'bold', margin: 3}}>{this.props.category}</Text>
         </View>
         {
-          activeActions.length === 0 && 
+          actionHistory.length === 0 && 
           <Text>No pending actions. Add a job to generate activities.
           </Text>
         }
-        <ScrollView style={style.feed}>
-          {activeActions.map( (e, i) => <TaskFeedItem category={that.props.category} task={e} key={i}/>)}
+        <ScrollView >
+          {actionHistory.map( (e, i) => <TaskFeedItem category={that.props.category} task={e} key={i}/>)}
         </ScrollView>
       </View>
     )

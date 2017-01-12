@@ -5,6 +5,7 @@ import {
   Picker
 } from 'react-native'
 import { NavigationStyles } from '@exponent/ex-navigation';
+import DatePicker from 'react-native-datepicker'
 
 // state management
 import mobx from 'mobx';
@@ -26,14 +27,16 @@ export default class CreateActionModal extends Component {
 
   constructor(props) {
     super(props)
-    var today = new Date().toISOString().replace(/T/, ' ').slice(0, 19);
+    var today = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    console.log('today: ', today)
 
     this.state = {
+      id: null,
       type: null,
       company: this.props.route.params.company,
       description: null,
       actionSource: 'user',
-      jobId: this.props.route.params.jobId,
+      JobId: this.props.route.params.jobId,
       userId: 1,
       contactId: 1,
       selected: null,
@@ -59,7 +62,6 @@ export default class CreateActionModal extends Component {
     console.log('new action: ', this.state)
     var that = this;
 
-    console.log('before send: ' , that.state)
     fetch(config.host + '/actions', 
       {
         method: 'POST',
@@ -71,7 +73,7 @@ export default class CreateActionModal extends Component {
           company: this.state.company,
           description: this.state.description,
           actionSource: this.state.actionSource,
-          jobId: this.state.jobId,
+          jobId: this.state.JobId,
           userId: this.state.userId,
           contactId: this.state.contactId,
           scheduledTime: this.state.scheduledTime,
@@ -79,8 +81,19 @@ export default class CreateActionModal extends Component {
         })
       })
       .then((response) => {
-        Store.push(mobx.toJS(that.state), 'actions');
-        console.log('action response:', response);
+          return response.json()
+      })
+      .then((response) => {
+        var newAction = response;
+        that.setState({
+          id: response.id
+        })
+        console.log('new action id:', response.id)
+        console.log('new action job:', response.JobId)
+        console.log()
+        Store.push(that.state, 'actions');
+        Store.push(that.state, 'activeActions');
+        Store.updateActionCount();
         that.closeModal();
       })
     that.closeModal();
@@ -88,6 +101,7 @@ export default class CreateActionModal extends Component {
 
   render() {
     const {actionTypes} = Store;
+
     var styles = {
       inputStyle: {
         flex:1, height: 40, borderColor:"#a5a2a4", borderWidth: 1},
@@ -133,6 +147,31 @@ export default class CreateActionModal extends Component {
             }
             </Picker>
           </View>
+        </View>
+        <View style={{flexDirection: 'row'}}>
+          <Text>Scheduled Time:</Text>
+          <DatePicker
+            style={{width: 200}}
+            date={this.state.scheduledTime}
+            mode="datetime"
+            format="YYYY-MM-DD HH:mm"
+            confirmBtnText="Confirm"
+            cancelBtnText="Cancel"
+            customStyles={{
+              dateIcon: {
+                position: 'absolute',
+                left: 0,
+                top: 4,
+                marginLeft: 0
+              },
+              dateInput: {
+                marginLeft: 36
+              }
+            }}
+            minuteInterval={10}
+            onDateChange={(datetime) => {this.setState({scheduledTime: datetime});}}
+          />
+          <Text>datetime: {this.state.scheduledTime}</Text>
         </View>
         <View style={{flexDirection: 'row'}}>
           <Text>Description: </Text>

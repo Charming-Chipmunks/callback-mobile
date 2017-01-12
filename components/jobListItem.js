@@ -102,7 +102,7 @@ export default class JobListItem extends Component {
     var cleanSnippet = this.props.job.snippet? this.props.job.snippet.split('<b>').join('').split('</b>').join('') : '(no description)';
     var styles = {
       jobItemStyle: {
-        flexDirection: 'column', borderWidth: 2, borderColor: '#a5a2a4', margin: 10, height: 400
+        flexDirection: 'column', borderWidth: 2, borderColor: '#a5a2a4', margin: 10, height: 375
       },
       yesButtonStyle: {
         backgroundColor: '#4286f4',

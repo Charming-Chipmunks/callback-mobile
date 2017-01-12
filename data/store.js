@@ -1,8 +1,11 @@
 import {observable, action} from 'mobx'
 import data from './fakeData'
-
+import mobx from 'mobx';
 
 class ObservableStore {
+  //access tokens
+  @observable idToken;
+
   @observable users = data.fakeUsers;
   @observable activeUser = "Joosang";
   //actions
@@ -11,7 +14,11 @@ class ObservableStore {
   @observable actionHistory = [];
   @observable actionCount = 0;
   @observable actionHistoryCount = 0;
-  @observable actionTypes = {};
+  @observable actionTypes = {
+    apply: 'apply', connections: 'connections', email: 'email', interview:'interview',
+    learn: 'learn', 'Liked Job': 'Liked Job', meetup: 'meetup', offer: 'offer',
+    phone: 'phone', resume: 'resume', review: 'review', schedule: 'schedule'
+  };
   // new jobs
   @observable jobs = [];
   @observable jobCount = 0;
@@ -24,16 +31,26 @@ class ObservableStore {
   @observable userParams = [];
   // new form items
   @observable newJob = {
-    jobTitle: null,
-    company: null,
-    url: null, 
-    address:    null,
-    city:       null,
-    state:      null,
-    snippet:    null,
-    source:     'user',
-    origin:     'user' , //'indeed', 'dice', user, etc.
-    id:         1
+    jobTitle: '',
+    company: '',
+    url: '',
+    address: '',
+    city: '',
+    state: '',
+    snippet: '',
+    source: 'user',
+    origin: 'user',
+    id: undefined
+  }
+
+  @action setIdToken(token){
+    console.log('set token')
+    this.idToken = token;
+  }
+
+  @action setState(key, value){
+    console.log('set key')
+    this[key] = value;
   }
 
   @action updateForm(formName, formField, item) {
@@ -49,23 +66,19 @@ class ObservableStore {
 
   // general
   @action push(entry, array){
-    if (array === 'actionHistory') {
-      this.actionHistory.push(entry);
-    }
+    this[array].push(entry);
+  }
 
-    if (array === 'userParams') {
-      console.log('pushed to userParams')
-      this.userParams.push(entry);
-    }
-
-    if (array === 'favoredJobs') {
-      console.log('added a job');
-      this.favoredJobs.push(entry);
-    }
-
-    if(array === 'actions') {
-      console.log('added an action');
-      this.actions.push(entry);   
+  @action deleteFromArray(id, array){
+    var i = 0;
+    while (i < this[array].length){
+      if (this[array][i].id === id) {
+        this[array].splice(i, 1);
+        console.log('i', i)
+        break;
+      } else {
+        i++;
+      }
     }
   }
 
@@ -99,7 +112,7 @@ class ObservableStore {
 
   @action updateActionCount(n) {
     if (n !== undefined) {
-      if (n === '-') {
+      if (n === '-' && this.actionCount > 0) {
         this.actionCount--;
       } else {      
         this.actionCount = n;
@@ -111,7 +124,7 @@ class ObservableStore {
 
   @action updateHistoryCount(n) {
     if (n !== undefined) {
-      if (n === '-') {
+      if (n === '-' && this.actionHistoryCount > 0) {
         this.actionHistoryCount--;
       } else {      
         this.actionHistoryCount = n;
@@ -124,11 +137,11 @@ class ObservableStore {
   @action sortActions(res) {
     var that = this;
     res.forEach(function(action) {
-      if(action.type) {
-        if(!that.actionTypes[action.type]) {
-          that.actionTypes[action.type] = action.type;
-        }
-      }
+      // if(action.type) {
+      //   if(!that.actionTypes[action.type]) {
+      //     that.actionTypes[action.type] = action.type;
+      //   }
+      // }
 
       if (action.completedTime === null) {
         that.activeActions.push(action)

@@ -7,20 +7,31 @@ import {
   Notifications,
 } from 'exponent';
 import {
+  NavigationProvider,
   StackNavigation,
   TabNavigation,
   TabNavigationItem,
 } from '@exponent/ex-navigation';
 import {
-  FontAwesome,
+  FontAwesome
 } from '@exponent/vector-icons';
 
 import Alerts from '../constants/Alerts';
 import Colors from '../constants/Colors';
 import registerForPushNotificationsAsync from '../api/registerForPushNotificationsAsync';
 
+// state
+import {observer} from 'mobx-react/native'
+import Store from '../data/store'
+
+@observer
 export default class RootNavigation extends React.Component {
+  constructor(props){
+    super(props);
+  }
+
   componentDidMount() {
+    console.log('current route: ', this.props.navigator)
     this._notificationSubscription = this._registerForPushNotifications();
   }
 
@@ -29,19 +40,28 @@ export default class RootNavigation extends React.Component {
   }
 
   render() {
+    const {activeToken} = Store;
     return (
       <TabNavigation
         tabBarHeight={56}
-        initialTab="home">
+        initialTab="login">
+        
+        <TabNavigationItem 
+          id="login"
+          renderIcon={isSelected => this._renderIcon('user-o', isSelected)}>
+          <StackNavigation initialRoute="login" />
+        </TabNavigationItem>
+
+
         <TabNavigationItem
           id="home"
-          renderIcon={isSelected => this._renderIcon('home', isSelected)}>
+          renderIcon={isSelected => this._renderIcon('tasks', isSelected)}>
           <StackNavigation initialRoute="home" />
         </TabNavigationItem>
 
         <TabNavigationItem
           id="links"
-          renderIcon={isSelected => this._renderIcon('book', isSelected)}>
+          renderIcon={isSelected => this._renderIcon('folder', isSelected)}>
           <StackNavigation initialRoute="links" />
         </TabNavigationItem>
 

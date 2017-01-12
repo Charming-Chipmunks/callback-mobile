@@ -112,7 +112,7 @@ class JobListScreen extends Component {
   }
 
   render() {
-    var {jobs, favoredJobs, jobScreenActiveTab} = Store;
+    var {activeUser, jobs, favoredJobs, jobScreenActiveTab} = Store;
     var styles = {
       inputStyle: {
         height: 30, flex: 1, borderColor:"#a5a2a4", borderWidth: 1
@@ -126,7 +126,7 @@ class JobListScreen extends Component {
     }
     return (
       <View style={{flex:1, marginTop: 5}}>
-        <JobListNav user='Joosang' />
+        <JobListNav user={activeUser} />
         { this.state.jobIndex > jobs.length - 1 && 
           <NothingToReview />
         }

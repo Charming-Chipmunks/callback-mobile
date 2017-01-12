@@ -22,6 +22,7 @@ import {NavBar} from '../components/navBar'
 import TaskStatusItem from '../components/taskStatusItem'
 import TaskStatus from '../components/taskStatus'
 import TaskFeed from '../components/taskFeed'
+import HistoryFeed from '../components/historyFeed'
 
 // config
 
@@ -104,9 +105,16 @@ export default class TaskScreen extends Component {
   }
 
   componentWillMount() {
+    const {idToken} = Store;
+    console.log('idToken', idToken)
     var that = this;
     // get actions
-    fetch(config.host+ '/actions/1')
+    fetch(config.host+ '/actions/1', 
+    {
+      headers: {
+        credentials: idToken
+      }
+    })
       .then((response) => {
         return response.json()
       })
@@ -119,13 +127,18 @@ export default class TaskScreen extends Component {
       });
 
       // set new jobs
-    fetch(config.host + '/jobs/1/new')
+    fetch(config.host + '/jobs/1/new', {
+      headers: {
+        credentials: Store.idToken
+      }
+    })
       .then((response) => {
         // console.log('jobs found: ', response)
         console.log('config', config.host)
         return response.json();
       })
       .then((responseJson) => {
+        // console.log('jobsnew found: ', responseJson)
         Store.updateJobCount(responseJson.length);
         Store.updateJobs(responseJson);
       })
@@ -134,12 +147,16 @@ export default class TaskScreen extends Component {
       });
 
     // set favored jobs {
-    fetch(config.host + '/jobs/1/favored')
+    fetch(config.host + '/jobs/1/favored', {
+      headers: {
+        credentials: Store.idToken
+      }
+    })
       .then((response) => {
-        // console.log('jobs found: ', response)
         return response.json()
       })
       .then((responseJson) => {
+        // console.log('jobs found: ', responseJson)
         Store.updateFavoredJobs(responseJson);
       })
       .catch((error) => {
@@ -147,13 +164,18 @@ export default class TaskScreen extends Component {
       })
 
     // get params for user {
-    fetch(config.host + '/parameter/1')
+    fetch(config.host + '/parameter/1', {
+      headers: {
+        credentials: Store.idToken
+      }
+    })
       .then((response) => {
-        // console.log('jobs found: ', response)
         return response.json()
       })
       .then((responseJson) => {
         // update
+        // console.log('parameters: ', responseJson[0])
+        // Store.updateUserParams(responseJson.Parameters)
         Store.updateUserParams(responseJson[0].Parameters)
       })
       .catch((error) => {
@@ -169,13 +191,13 @@ export default class TaskScreen extends Component {
 
   // add <NavBar /> component to view to see custom NavBar
   render() {
-    const {actions} = Store;
+    const {activeUser, actions} = Store;
     return(
       <View style={{flex: 1, flexDirection: 'column', marginTop: 5}}>
-        <TaskStatus user='Joosang' taskTypes={testTaskTypes} jobCount={this.state.jobCount} actionCount={this.state.actionCount} navigator={this.props.navigator}/>
+        <TaskStatus user={activeUser} taskTypes={testTaskTypes} jobCount={this.state.jobCount} actionCount={this.state.actionCount} navigator={this.props.navigator}/>
         <View style={{flex: 1}}>
-          <TaskFeed category='Tasks' tasks={actions}/>
-          <TaskFeed category='History' tasks={actions}/>
+          <TaskFeed category='Tasks'/>
+          <HistoryFeed category='History'/>
         </View>
       </View>
     )

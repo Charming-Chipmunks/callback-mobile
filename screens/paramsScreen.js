@@ -41,7 +41,7 @@ export default class ParamsScreen extends Component {
   }
 
  render() {
-  const {userParams} = Store;
+  const {activeUser, userParams} = Store;
   var styles = {
     createButtonStyle: {
       backgroundColor: '#4286f4',
@@ -61,7 +61,7 @@ export default class ParamsScreen extends Component {
   return (
     <View style={{flex:1, flexDirection: 'column', marginTop:5}}>
       <View style={{margin:5}}>
-        <Text>Hi <Text style={{fontWeight: 'bold'}}>Joosang</Text>, here are your current job preferences.</Text>
+        <Text>Hi <Text style={{fontWeight: 'bold'}}>{activeUser}</Text>, here are your current job preferences.</Text>
       </View>
       <ScrollView style={{margin: 5}}>
         {

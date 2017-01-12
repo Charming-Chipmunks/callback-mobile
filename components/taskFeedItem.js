@@ -22,7 +22,7 @@ var icons = {
   meetup: 'https://cdn1.iconfinder.com/data/icons/black-socicons/512/meetup-128.png',
   'schedule': 'https://cdn4.iconfinder.com/data/icons/small-n-flat/24/calendar-128.png',
   review: 'https://cdn3.iconfinder.com/data/icons/touch-gesture-outline/512/touch_click_finger_hand_select_gesture-128.png',
-  'apply': 'https://cdn2.iconfinder.com/data/icons/picons-basic-1/57/basic1-001_write_compose_new-512.png',
+  'apply': 'https://cdn4.iconfinder.com/data/icons/gray-toolbar-7/512/test-256.png',
   done: 'https://cdn1.iconfinder.com/data/icons/basic-ui-icon-rounded-colored/512/icon-01-128.png',
   x: 'https://cdn0.iconfinder.com/data/icons/web/512/e52-128.png',
   'connections': 'https://cdn2.iconfinder.com/data/icons/ourea-icons/256/Connected_256x256-32.png',
@@ -62,6 +62,23 @@ class TaskFeedItem extends Component {
     this.completeTask = this.completeTask.bind(this);
   }
 
+  shouldShow(){
+    if ((this.props.category === 'Tasks' && !this.state.completed_time) 
+      || (this.props.category === 'History' && !!this.state.completed_time)) {
+      if (this.props.jobId) {
+        if (this.props.jobId === this.state.job_id) {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return true;
+      }
+    } else {
+      return false;
+    }
+  }
+
   completeTask() {
     var date = new Date();
     var completedText = "Completed task: " + this.state.action + '\n';
@@ -70,16 +87,34 @@ class TaskFeedItem extends Component {
 
     fetch(config.host + '/actions/1/' + this.state.id, {
       method: 'PUT'
-    }).then(function(response) {
+    })
+    .then((response) => {
+        return response.json()
+    })
+    .then(function(response) {
+      console.log('response from marking as complete', response)
         Alert.alert(completedText + nextTask);
-
-        that.setState({
-          completed_time: date
-        })
+        // that.setState({
+        //   completed_time: date
+        // })
 
         Store.updateActionCount('-');
         Store.updateHistoryCount();
-        Store.push(that.props.task, 'actionHistory')
+        Store.push(
+        {
+          id: that.state.id,
+          UserId: that.state.user_id,
+          JobId: that.state.job_id,
+          scheduledTime: that.state.scheduled_time,
+          completedTime: date,
+          actionSource: that.state.action_type,
+          type: that.state.action,
+          // can be task.description
+          description: that.state.action_details,
+          company: that.state.companyName
+        }, 'actionHistory')
+
+        Store.deleteFromArray(that.state.id, 'activeActions')
       })
       .catch((error) => {
         console.error(error);
@@ -94,17 +129,19 @@ class TaskFeedItem extends Component {
         borderColor: '#a5a2a4',
         backgroundColor: '#ffffff'
       })
-    } else if (time === 0) {
-      this.setState({
-        borderColor: '#F8CF46'
-      })
     } else {
-      // if not completed and overdue, highlight red
-      this.setState ({
-        borderColor: '#d66a63',
-        backgroundColor: '#d66a63'
-      })
-    }
+      if (time === 0) {
+        this.setState({
+          borderColor: '#F8CF46'
+        })
+      } else if (time < 0) {
+        // if not completed and overdue, highlight red
+        this.setState ({
+          borderColor: '#d66a63',
+          backgroundColor: '#d66a63'
+        })
+      }
+    } 
   }
 
   componentWillMount() {
@@ -144,22 +181,14 @@ class TaskFeedItem extends Component {
 
   render() {
     var style = {
-      barStyle: { flex:1 , flexDirection: 'row', alignItems: 'center', borderWidth: 2,
-      paddingLeft: 2,
-      backgroundColor: this.state.backgroundColor, borderColor: this.state.borderColor,
+      barStyle: {flex: 1, flexDirection: 'row', alignItems: 'center', borderWidth: 2,
+      padding: 2, marginTop: 2, borderColor: this.state.borderColor, backgroundColor: this.state.backgroundColor
       },
-      wrapperStyle: {
-        backgroundColor: this.state.backgroundColor, borderColor: this.state.borderColor,
-        flex: 1, flexDirection: 'row', marginTop: 2
-      },
-      checkboxStyle: {width: 60, flexDirection: 'row', alignSelf: 'flex-end',
-      justifyContent: 'center', alignItems: 'center'}
+      checkboxStyle: {width: 60, flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}
     }
 
-    if ((this.props.category === 'Tasks' && this.state.completed_time === null) 
-        || (this.props.category === 'History' && this.state.completed_time !== null)) {
+    if (this.shouldShow()) {
       return (
-      <View style={style.wrapperStyle}>
         <View style={style.barStyle}>
           <View style={{width: 40}}><Text style={{textAlign: 'center'}}>{this.state.display_date}</Text></View>
           <View style={{width: 50}}><Image 
@@ -167,12 +196,14 @@ class TaskFeedItem extends Component {
             source={{uri: this.state.icon}} 
           /></View>
           <View style={{flex: 1, flexDirection: 'column'}}>
+            <Text>Task ID: {this.props.task.id}</Text>
+            <Text>Prop Job:{this.props.jobId}</Text>
+            <Text>State Job:{this.state.job_id}</Text>
             <Text>{this.state.action_details}</Text>
             <Text display={this.state.companyName}>{this.state.companyName}</Text>
           </View>
-        </View>
-        <View style={{justifyContent: 'center'}}>
         { this.props.category === 'Tasks' &&
+        <View style={{justifyContent: 'center'}}>
           <View style={style.checkboxStyle}>
             <TouchableOpacity onPress={this.completeTask}>  
               <Image 
@@ -187,11 +218,12 @@ class TaskFeedItem extends Component {
               />
             </TouchableOpacity>
           </View>
+        </View>
         }
         </View>
-      </View>
       )
-    } else {
+    } 
+    else {
       return null
     }
   }
