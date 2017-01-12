@@ -20,8 +20,8 @@
     "moment": "^2.17.1",
     "react": "~15.3.2",
     "react-native": "git+https://github.com/exponentjs/react-native#sdk-12.0.0",
-    "react-native-date-picker": "0.0.1",
     "react-native-datepicker": "^1.4.3",
+    "react-native-dropdown": "0.0.6",
     "react-native-simple-auth": "^0.3.0"
   },
   "devDependencies": {
